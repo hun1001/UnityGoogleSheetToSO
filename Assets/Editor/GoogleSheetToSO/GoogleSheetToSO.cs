@@ -17,7 +17,7 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
         private string _sheetKey = "";
         private string _savePath = "";
 
-        private static List<SOVariable> _sheetTypeDictionary = new List<SOVariable>();
+        private static List<SOVariable> _sheetTypeList = new List<SOVariable>();
         private List<string> _fileNameVariableList = new List<string>();
         private int _fileNameIndex = 0;
 
@@ -42,17 +42,17 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 
             if (GUI.changed)
             {
-                _sheetTypeDictionary.Clear();
+                _sheetTypeList.Clear();
                 if (_targetScriptableObject != null)
                 {
                     var test = _targetScriptableObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
 
                     foreach (var item in test)
                     {
-                        _sheetTypeDictionary.Add(new SOVariable { type = item.FieldType, name = item.Name, isUsing = true });
+                        _sheetTypeList.Add(new SOVariable { type = item.FieldType, name = item.Name, isUsing = true });
                         if (item.FieldType == typeof(string))
                         {
-
+                            _fileNameVariableList.Add(item.Name);
                         }
                     }
                 }
@@ -63,48 +63,48 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 
             _scrollPos = EditorGUILayout.BeginScrollView(_scrollPos);
 
-            for (int i = 0; i < _sheetTypeDictionary.Count; ++i)
+            for (int i = 0; i < _sheetTypeList.Count; ++i)
             {
                 EditorGUILayout.BeginHorizontal();
 
                 string tempType = "";
 
-                if (_sheetTypeDictionary[i].type == typeof(int))
+                if (_sheetTypeList[i].type == typeof(int))
                 {
                     tempType = "int";
                 }
-                else if (_sheetTypeDictionary[i].type == typeof(float))
+                else if (_sheetTypeList[i].type == typeof(float))
                 {
                     tempType = "float";
                 }
-                else if (_sheetTypeDictionary[i].type == typeof(string))
+                else if (_sheetTypeList[i].type == typeof(string))
                 {
                     tempType = "string";
                 }
-                else if (_sheetTypeDictionary[i].type == typeof(bool))
+                else if (_sheetTypeList[i].type == typeof(bool))
                 {
                     tempType = "bool";
                 }
                 else
                 {
-                    _sheetTypeDictionary.RemoveAt(i);
+                    _sheetTypeList.RemoveAt(i);
                     continue;
                 }
 
                 EditorGUILayout.LabelField(tempType, GUILayout.ExpandWidth(true));
 
-                EditorGUILayout.LabelField(_sheetTypeDictionary[i].name, GUILayout.ExpandWidth(true));
+                EditorGUILayout.LabelField(_sheetTypeList[i].name, GUILayout.ExpandWidth(true));
 
-                var temp = _sheetTypeDictionary[i];
-                temp.isUsing = EditorGUILayout.Toggle(_sheetTypeDictionary[i].isUsing, GUILayout.ExpandWidth(true));
-                _sheetTypeDictionary[i] = temp;
+                var temp = _sheetTypeList[i];
+                temp.isUsing = EditorGUILayout.Toggle(_sheetTypeList[i].isUsing, GUILayout.ExpandWidth(true));
+                _sheetTypeList[i] = temp;
 
                 EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.EndScrollView();
 
-
+            _fileNameIndex = EditorGUILayout.Popup("File Name Variable", _fileNameIndex, _fileNameVariableList.ToArray());
 
             if (GUILayout.Button("Reset Folder"))
             {
@@ -127,14 +127,36 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             string result = www.downloadHandler.text;
             string result2 = result.Replace("\r", "");
 
+
             string[] lines = result2.Split('\n');
 
+            for (int i = 1; i < lines.Length; ++i)
+            {
+                string[] data = lines[i].Split('\t');
 
+                for (int j = 0; j < data.Length; ++j)
+                {
+                    var temp = ScriptableObject.CreateInstance(_targetScriptableObject.GetType());
+
+                    for (int k = 0; k < _sheetTypeList.Count; ++k)
+                    {
+                        if (_sheetTypeList[k].isUsing)
+                        {
+                            temp.GetType().GetField(_sheetTypeList[k].name).SetValue(temp, Convert.ChangeType(data[k], _sheetTypeList[k].type));
+                        }
+                    }
+
+                    AssetDatabase.CreateAsset(temp, _savePath + "/" + data[_fileNameIndex] + ".asset");
+                }
+            }
+
+            AssetDatabase.SaveAssets();
+            EditorUtility.FocusProjectWindow();
         }
 
         private void OnDisable()
         {
-            _sheetTypeDictionary.Clear();
+            _sheetTypeList.Clear();
         }
 
         public struct SOVariable

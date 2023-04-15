@@ -6,7 +6,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "GoogleSpreadSheetToSO/TestSO")]
 public class TestSO : ScriptableObject
 {
-    public int testInt;
-    public float testFloat;
-    public string testString;
+    public string _name;
+    public int hp;
+    public float speed;
+    public int attack;
+    public float power;
 }

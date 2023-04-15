@@ -19,6 +19,7 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 
         private static List<SOVariable> _sheetTypeList = new List<SOVariable>();
         private List<string> _fileNameVariableList = new List<string>();
+        private List<string> _sheetDataIgnoreTextList = new List<string>();
         private int _fileNameIndex = 0;
 
         private Vector2 _scrollPos = Vector2.zero;
@@ -43,6 +44,7 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             if (GUI.changed)
             {
                 _sheetTypeList.Clear();
+                _sheetDataIgnoreTextList.Clear();
                 if (_targetScriptableObject != null)
                 {
                     var test = _targetScriptableObject.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
@@ -50,6 +52,7 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
                     foreach (var item in test)
                     {
                         _sheetTypeList.Add(new SOVariable { type = item.FieldType, name = item.Name, isUsing = true });
+                        _sheetDataIgnoreTextList.Add("");
                         if (item.FieldType == typeof(string))
                         {
                             _fileNameVariableList.Add(item.Name);
@@ -94,6 +97,8 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
                 EditorGUILayout.LabelField(tempType, GUILayout.ExpandWidth(true));
 
                 EditorGUILayout.LabelField(_sheetTypeList[i].name, GUILayout.ExpandWidth(true));
+
+                _sheetDataIgnoreTextList[i] = EditorGUILayout.TextField(_sheetDataIgnoreTextList[i], GUILayout.ExpandWidth(true));
 
                 var temp = _sheetTypeList[i];
                 temp.isUsing = EditorGUILayout.Toggle(_sheetTypeList[i].isUsing, GUILayout.ExpandWidth(true));
@@ -146,6 +151,10 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
                     {
                         if (_sheetTypeList[k].isUsing)
                         {
+                            if (_sheetDataIgnoreTextList[k] != "")
+                            {
+                                data[k] = data[k].Replace(_sheetDataIgnoreTextList[k], "");
+                            }
                             temp.GetType().GetField(_sheetTypeList[k].name).SetValue(temp, Convert.ChangeType(data[k], _sheetTypeList[k].type));
                         }
                     }

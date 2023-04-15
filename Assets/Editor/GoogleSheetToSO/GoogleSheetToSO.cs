@@ -6,6 +6,7 @@ using UnityEditor;
 using Rp.GoogleSheet;
 using UnityEngine.Networking;
 using System.Reflection;
+using System.IO;
 
 namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 {
@@ -17,6 +18,8 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
         private string _savePath = "";
 
         private static List<SOVariable> _sheetTypeDictionary = new List<SOVariable>();
+        private List<string> _fileNameVariableList = new List<string>();
+        private int _fileNameIndex = 0;
 
         private Vector2 _scrollPos = Vector2.zero;
 
@@ -47,6 +50,10 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
                     foreach (var item in test)
                     {
                         _sheetTypeDictionary.Add(new SOVariable { type = item.FieldType, name = item.Name, isUsing = true });
+                        if (item.FieldType == typeof(string))
+                        {
+
+                        }
                     }
                 }
             }
@@ -78,6 +85,11 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
                 {
                     tempType = "bool";
                 }
+                else
+                {
+                    _sheetTypeDictionary.RemoveAt(i);
+                    continue;
+                }
 
                 EditorGUILayout.LabelField(tempType, GUILayout.ExpandWidth(true));
 
@@ -91,6 +103,13 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             }
 
             EditorGUILayout.EndScrollView();
+
+
+
+            if (GUILayout.Button("Reset Folder"))
+            {
+                ResetFolder();
+            }
 
             if (GUILayout.Button("Get Sheet Data"))
             {
@@ -106,7 +125,11 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             while (!www.isDone) { }
 
             string result = www.downloadHandler.text;
-            Debug.Log(result);
+            string result2 = result.Replace("\r", "");
+
+            string[] lines = result2.Split('\n');
+
+
         }
 
         private void OnDisable()
@@ -119,6 +142,23 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             public Type type;
             public string name;
             public bool isUsing;
+        }
+
+        private void ResetFolder()
+        {
+            DirectoryInfo dir = new DirectoryInfo(Application.dataPath + "/" + _savePath);
+
+            foreach (var item in dir.GetFiles())
+            {
+                item.Delete();
+            }
+
+            foreach (DirectoryInfo di in dir.GetDirectories())
+            {
+                di.Delete(true);
+            }
+
+            AssetDatabase.Refresh();
         }
     }
 }

@@ -113,11 +113,11 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 
             if (GUILayout.Button("Get Sheet Data"))
             {
-                GetDataAndSave();
+                SaveAsSO(GetDataFromSheet());
             }
         }
 
-        private void GetDataAndSave()
+        private string GetDataFromSheet()
         {
             UnityWebRequest www = UnityWebRequest.Get(GoogleSheetUtil.GetSheetLink(_sheetKey));
             www.SendWebRequest();
@@ -127,8 +127,12 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             string result = www.downloadHandler.text;
             string result2 = result.Replace("\r", "");
 
+            return result2;
+        }
 
-            string[] lines = result2.Split('\n');
+        private void SaveAsSO(string dataFromSheet)
+        {
+            string[] lines = dataFromSheet.Split('\n');
 
             for (int i = 1; i < lines.Length; ++i)
             {

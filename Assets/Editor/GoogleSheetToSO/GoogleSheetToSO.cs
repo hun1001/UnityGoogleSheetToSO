@@ -111,10 +111,10 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
 
             _fileNameIndex = EditorGUILayout.Popup("File Name Variable", _fileNameIndex, _fileNameVariableList.ToArray());
 
-            if (GUILayout.Button("Reset Folder"))
-            {
-                ResetFolder();
-            }
+            // if (GUILayout.Button("Reset Folder"))
+            // {
+            //     ResetFolder();
+            // }
 
             if (GUILayout.Button("Get Sheet Data"))
             {
@@ -179,7 +179,7 @@ namespace Rp.CustomEditorWindow.S2S // S2S = Sheet to SO
             public bool isUsing;
         }
 
-        private void ResetFolder()
+        private void ResetFolder() // here have a bug
         {
             DirectoryInfo dir = new DirectoryInfo(Application.dataPath + "/" + _savePath);
 
